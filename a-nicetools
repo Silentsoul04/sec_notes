@@ -1,0 +1,88 @@
+Copy File into
+==============
+cat copiedfile.txt |xclip -selection clipboard
+
+Ngrep Tools
+=============
+ngrep -l -q -d eth0 "^GET |^POST " tcp and port 80 and port 443
+
+Listening TCP Connection
+========================
+tcpick
+
+netwox,httest
+
+View all socket and Listening Socket
+====================================
+ss -a
+ss -l
+ss -l -p 
+
+Dhcpx is a DHCP server training tool
+===================================
+dhcpx -i eth0 -vvv 
+
+SSL / TLS connection attack test
+================================
+sslsniff -t -p <port> -w <log file> -m IPSCACLASEA1.crt -c <CertificateConverter> 
+
+Get Hardware Information
+========================
+dmidecode | less
+dmidecode -q -t memory | less
+dmidecode -q -t cache
+
+
+Cross Compiling Exploits
+=======================
+gcc -m32 -o output32 hello.c (32 bit)
+gcc -m64 -o output hello.c (64 bit)
+
+gcc -o exploit exploit.c
+
+Compile Windows .exe on Linux
+=============================
+i586-mingw32msvc-gcc exploit.c -lws2_32 -o exploit.exe
+
+
+SNMP
+====
+onesixtyone -c communities.txt X.X.X.X
+snmp-check -t X.X.X.X -c public
+snmpwalk -c public -v 1 X.X.X.X [VALUE]
+hydra -P passwords.txt -v X.X.X.X snmp
+
+NCRACK
+========
+ncrack -vv --user administrator -P passwords.txt rdp://X.X.X.X,CL=1
+
+rdesktop X.X.X.X
+
+SMB
+===
+enum4linux -a X.X.X.X
+
+rpcclient -U "" X.X.X.X
+
+ >srvinfo
+ >enumdomusers
+ >getdompwinfo
+ >querydominfo
+ >netshareenum
+ >netshareenumall
+ 
+ net rpc -W DOMAIN.LOCAL -U user10 -S X.X.X.X shell
+ 
+ net rpc> user
+ net rpc user> show 
+ net rpc user> show user01
+ user rid: 1105, group rid: 513
+ 
+ smbclient -L 192.168.1.10
+
+ smbclient //X.X.X.X/ipc$ -U administrator
+
+ smbclient //X.X.X.X/admin$ -U administrator
+ 
+ 
+

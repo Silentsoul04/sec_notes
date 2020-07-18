@@ -1,0 +1,10 @@
+ZIP File Information
+=====================
+
+7z l -slt XXXX.zip
+
+
+Decrypt Zip File
+================
+
+zip2john XXXX.zip

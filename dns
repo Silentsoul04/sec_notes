@@ -1,0 +1,191 @@
+DNS
+
+64.6.64.6 - verisign
+1.1.1.1 - cloudflare
+9.9.9.9 - quad9
+84.200.69.80 - dnswatch
+94.247.43.254 - opennic
+89.233.43.71 - censurfridns
+94.130.110.185 - dnsprivacy
+208.67.222.222 - opendns
+
+dnsrecon
+=========
+sudo apt-get install libavahi-compat-libdnssd1 git-core python-setuptools
+sudo easy_install netaddr
+sudo easy_install dnspython
+git clone git://github.com/darkoperator/dnsrecon.git
+cd dnsrecon/
+./dnsrecon.py
+
+
+./dnsrecon.py -d weberdns.de -z
+
+Performing General Enumeration of Domain: sshfp.net
+DNSSEC is configured for sshfp.net
+DNSKEYs:
+[*]      SOA ns1.weberdns.de 80.154.108.230
+[*]      NS ns3.weberdns.de 193.24.225.53
+[*]      Bind Version for 193.24.225.53 9.9.5-3ubuntu0.8-Ubuntu
+
+
+dnssecwalk ( use atk6-dnssecwalk )
+===================================
+dnssecwalk 8.8.8.8 weberdns.de
+
+Starting DNSSEC walking on server 8.8.8.8 about weberdns.de.
+Found: 16a.weberdns.de.
+Found: 16aaaa.weberdns.de.
+Found: 16dual.weberdns.de.
+Found: 32a.weberdns.de.
+Found: 32aaaa.weberdns.de.
+Found: 32aaaa-long.weberdns.de.
+Found: 32dual.weberdns.de.
+Found: 32dual-long.weberdns.de.
+
+
+# dig @ns1.example.com example.com axfr
+Dns transferini ile subdomainleri tespit edilmesi açıkmı kontrol edilir
+
+# General
+
+dig target.com <type>                    # a, mx, ns, soa, srv, txt, any
+dig -x <target IP>                       # Pointer records
+dig @nameserverIP target.com axfr        # Zone transfer
+dig @nameserverIP target.com afro        # Forward zone transfer
+
+host -t ns target.com                    # Show name servers 
+host -t mx target.com                    # Show mail servers
+host www.target.com
+host -l target.com <nameserver>          # Zone transfer
+------------------------------------------------------------------------------------------------------
+ 
+# Cache snooping
+
+host -r www.google.com <nameserver IP>
+------------------------------------------------------------------------------------------------------
+
+# DNS cache poisioning
+
+for i in `53.txt`; do dig @"$i" +short porttest.dns-oarc.net TXT; done; > CachePoison.txt
+------------------------------------------------------------------------------------------------------
+
+# Non-recursive DNS queries
+
+for i in `cat 53.txt`; do dig @"$i" www.google.com A +norecurse; done > NonRecurive.txt
+------------------------------------------------------------------------------------------------------
+
+# Open DNS resolution against a DNS server.
+
+Supply a hostname not cached or inside a company owned domain.
+nslookup www.nsa.gov <nameserver IP>
+------------------------------------------------------------------------------------------------------
+
+# Spoofed request amplification DDoS
+
+for i in `cat 53.txt`; do dig @"$i" . NS; done > AmpDDoS.txt
+
+------------------------------------------------------------------------------------------------------
+
+Fierce
+
+fierce.pl -dns xxx.com
+
+http://ha.ckers.org/fierce/ adresinden download edebilir ve kullanımı ile ilgili detaylı bilgiye erişebilirsiniz.
+
+DNSEnum
+
+dnsenum.pl xxx.com
+
+http://code.google.com/p/dnsenum/ adresinden indirebilirsiniz.
+
+DNSWalk
+
+dnswalk xxx.com. (domain sonunda nokta olmalı, olmaz ise çalışmaz.)
+
+http://sourceforge.net/projects/dnswalk/ adresinden indirebilirsiniz.
+
+DNSMap
+
+dnsmap xxx.com
+
+http://code.google.com/p/dnsmap/ adresinden indirebilirsiniz.
+
+THEHarvester
+
+theHarvester.py -d xxx.com -l 500 -b google
+
+===================================
+
+DNS lookups
+$ whois www.alibaba.com
+
+dig www.alibaba.com ANY +noall +answer
+#Find Out TTL Value Using dig
+dig +nocmd +noall +answer a www.alibaba.com
+#Find Domain SOA Record
+$ dig +nssearch www.alibaba.com
+#Display All Records
+$ dig +noall +answer www.alibaba.com any
+#Get Only Short Answer
+$ dig +short www.alibaba.com
+#Trace Domain Delegation Path
+$ dig +trace www.alibaba.com
+$ dig -x 217.168.240.132
+$ dig +noall +answer -x 217.168.240.132
+$ dig -x 193.140.80.208 +short 
+$ dig -x 193.140.80.208 +trace
+check if your mail servers direct correctly
+$dig your_domain_name.com MX
+check if "A" records are set correctly
+$dig your_domain_name.com
+
+
+Get TTL Information
+$ host -v -t {TYPE} {example.com}
+host -t any www.alibaba.com
+Find Out the Domain IP
+$ host -v -t a cyberciti.biz
+Find Out the Domain Mail Server
+$ host -v -t mx cyberciti.biz
+$ host -v -t soa cyberciti.biz
+Find Out the Domain Name Servers
+$ host -v -t ns cyberciti.biz
+$ host -a www.alibaba.com
+Find Out the Domain CNAME Record
+$ host -t cname files.cyberciti.biz
+Query Particular Name Server
+$ host www.alibaba.com ns1.www.alibaba.com
+Find Out the Domain TXT Recored (e.g. SPF)
+$ host -t txt www.alibaba.com
+Reverse DNS lookup 
+$host 217.168.240.132
+$host -v -t ptr 75.126.153.206
+#FW trick
+#By default, host command uses UDP protocol,Pass the -T option to use a TCP connection when querying the name server. 
+#see if the name server works over TCP and firewall allows queries over the TCP
+host -t cname files.cyberciti.biz
+
+
+
+#change the default timeout to wait for a reply using -timeout option.
+nslookup -timeout=10 redhat.com	
+nslookup -debug redhat.com
+nslookup -type=any www.alibaba.com
+#By default DNS servers uses the port number 53. If the port number changes
+nslookup -port 56 redhat.com
+specify a particular name server to resolve the domain name, ns1.redhat.com as the DNS server, ns1.redhat.com has all the zone information of redhat.com
+nslookup redhat.com ns1.redhat.com
+#view all the available DNS records using -query=any option.
+nslookup -type=any google.com
+nslookup 217.168.240.132
+
+
+
+look up geolocation from the command line
+$ curl ipinfo.io/23.66.166.151 
+
+$ sudo yum install GeoIP GeoIP-data
+$ geoiplookup 8.8.4.4
+set this up as a cron:
+$ /usr/bin/geoipupdate

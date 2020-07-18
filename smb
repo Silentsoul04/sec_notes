@@ -1,0 +1,9 @@
+
+smbclient -L //X.X.X.X
+
+enumforlinux X.X.X.X
+
+smbmap -H X.X.X.X
+
+smbclient -L //X.X.X.X/BAKILACAKYER
+
